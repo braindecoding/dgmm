@@ -8,3 +8,7 @@ requirements :
 
 * python 3.8
 * matlab 2021a
+
+Output reconstruction on var :
+
+X_reconstructed_mu

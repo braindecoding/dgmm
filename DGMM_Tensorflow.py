@@ -337,7 +337,7 @@ for i in range(numTest):
     x_reconstructed_mu = temp_mu / L
     X_reconstructed_mu[i,:,:,:] = x_reconstructed_mu
 
-# In[]:# visualization the reconstructed images
+# In[]:# visualization the reconstructed images, output in var X_reconstructed_mu
 n = 10
 for j in range(1):
     plt.figure(figsize=(12, 2))    
