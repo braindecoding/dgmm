@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # In[]: load model
-with open('dgmm.pkl') as f:  # Python 3: open(..., 'rb')
-    numTest, img_chns, img_rows, img_cols,H_mu,D2,sigma_h,gamma_mu,S,B_mu,rho,K,Y_test,Z_mu,L = pickle.load(f)
+with open('dgmm.pkl','rb') as f:  # Python 3: open(..., 'rb')
+    numTest, img_chns, img_rows, img_cols,H_mu,D2,sigma_h,gamma_mu,C,S,B_mu,rho,K,Y_test,Z_mu,L,resolution,X_test = pickle.load(f)
 imagereconstruct = keras.models.load_model('dgmmmodel.h5')
 
 # In[]: reconstruct X (image) from Y (fmri)

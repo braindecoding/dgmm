@@ -319,8 +319,8 @@ for l in range(maxiter):
 
 # In[]: save model and parameter results
 import pickle
-with open('dgmm.pkl', 'w') as f:  # Python 3: open(..., 'wb')
-    pickle.dump([numTest, img_chns, img_rows, img_cols,H_mu,D2,sigma_h,gamma_mu,S,B_mu,rho,K,Y_test,Z_mu,L], f)
+with open('dgmm.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump([numTest, img_chns, img_rows, img_cols,H_mu,D2,sigma_h,gamma_mu,C,S,B_mu,rho,K,Y_test,Z_mu,L,resolution,X_test], f)
 
 imagereconstruct.save("dgmmmodel.h5")
 
