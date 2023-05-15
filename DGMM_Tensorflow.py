@@ -317,6 +317,8 @@ for l in range(maxiter):
     Y_mu = np.array(Z_mu * B_mu + R_mu * H_mu) 
     Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2)))   
 
+# In[]: save model
+imagereconstruct.save("dgmmmodel.h5")
 # In[]: reconstruct X (image) from Y (fmri)
 X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))
 HHT = H_mu * H_mu.T + D2 * sigma_h
