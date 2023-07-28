@@ -10,9 +10,8 @@ import os
 os.environ['THEANO_FLAGS'] = "device=gpu"  
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import savemat, loadmat
-from sklearn import preprocessing
-from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape
+from scipy.io import savemat
+from tensorflow.keras.layers import Input, Dense, Reshape
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend
@@ -25,65 +24,19 @@ from tensorflow.keras import metrics
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
+from lib import prepro,ars
 
-# In[]: Load dataset
-handwriten_69=loadmat('digit69_28x28.mat')
-#ini fmri 10 test 90 train satu baris berisi 3092
-Y_train = handwriten_69['fmriTrn'].astype('float32')
-Y_test = handwriten_69['fmriTest'].astype('float32')
-
-# ini stimulus semua
-X_train = handwriten_69['stimTrn']#90 gambar dalam baris isi per baris 784 kolom
-X_test = handwriten_69['stimTest']#10 gambar dalam baris isi 784 kolom
-
-X_train = X_train.astype('float32') / 255.
-X_test = X_test.astype('float32') / 255.
-
-# In[]: lihat isinya, ketika dijalankan hasilnya jelek
-stim0=np.reshape(X_test[0],(28,28)).T
-stim1=np.reshape(X_test[1],(28,28)).T
-stim2=np.reshape(X_test[2],(28,28)).T
-stim3=np.reshape(X_test[3],(28,28)).T
-
-stimtrain0=np.reshape(X_train[0],(28,28)).T
-stimtrain1=np.reshape(X_train[1],(28,28)).T
-stimtrain2=np.reshape(X_train[2],(28,28)).T
-stimtrain3=np.reshape(X_train[3],(28,28)).T
-
-
-
-# In[]: X adalah gambar stimulus,ukuran pixel 28x28 = 784 di flatten sebelumnya dalam satu baris, 28 row x 28 column dengan channel 1(samaa kaya miyawaki)
+# In[]: Load dataset X stimulus Y fMRI
 resolution = 28
-#channel di depan
-#X_train = X_train.reshape([X_train.shape[0], 1, resolution, resolution])
-#X_test = X_test.reshape([X_test.shape[0], 1, resolution, resolution])
-#channel di belakang(edit rolly) 1 artinya grayscale
-X_train = X_train.reshape([X_train.shape[0], resolution, resolution, 1])
-X_test = X_test.reshape([X_test.shape[0], resolution, resolution, 1])
-# In[]: Normlization sinyal fMRI, min max agar nilainya hanya antara 0 sd 1
-min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1))   
-Y_train = min_max_scaler.fit_transform(Y_train)     
-Y_test = min_max_scaler.transform(Y_test)
-
-print ('X_train.shape : ')
-print (X_train.shape)
-print ('Y_train.shape')
-print (Y_train.shape)
-print ('X_test.shape')
-print (X_test.shape)
-print ('Y_test.shape')
-print (Y_test.shape)
-numTrn=X_train.shape[0]#ada 90 data training
-numTest=X_test.shape[0]#ada 10 data testing
+X_train,X_test,Y_train,Y_test=prepro.getXY('digit69_28x28.mat',resolution)
 
 # In[]: Set the model parameters and hyper-parameters
 maxiter = 200
 nb_epoch = 1
 batch_size = 10
-resolution = 28
 D1 = X_train.shape[1]*X_train.shape[2]*X_train.shape[3]
 D2 = Y_train.shape[1]
-K = 6
+K = 6 # dimensi latent space
 C = 5
 intermediate_dim = 128
 
@@ -102,8 +55,8 @@ t = 10.0 # kernel parameter in similarity measure
 L = 100   # Monte-Carlo sampling
 
 np.random.seed(1000)
-numTrn=X_train.shape[0]
-numTest=X_test.shape[0]
+numTrn=X_train.shape[0]#ada 90 data training
+numTest=X_test.shape[0]#ada 10 data testing
 
 # input image dimensions
 img_rows, img_cols, img_chns = 28, 28, 1
@@ -121,87 +74,16 @@ else:
 
 # In[]: Building the architechture
 X = Input(shape=original_img_size)
-Y = Input(shape=(D2,))
+Y = Input(shape=(D2,))#dimensi fmri
 Y_mu = Input(shape=(D2,))
 Y_lsgms = Input(shape=(D2,))
-conv_1 = Conv2D(img_chns,
-                kernel_size=(2, 2),
-                padding='same', activation='relu', name='en_conv_1')(X)
-conv_2 = Conv2D(filters,
-                kernel_size=(2, 2),
-                padding='same', activation='relu',
-                strides=(2, 2), name='en_conv_2')(conv_1)
-conv_3 = Conv2D(filters,
-                kernel_size=num_conv,
-                padding='same', activation='relu',
-                strides=1, name='en_conv_3')(conv_2)
-conv_4 = Conv2D(filters,
-                kernel_size=num_conv,
-                padding='same', activation='relu',
-                strides=1, name='en_conv_4')(conv_3)
-flat = Flatten()(conv_4)
-hidden = Dense(intermediate_dim, activation='relu', name='en_dense_5')(flat)
 
-Z_mu = Dense(K, name='en_mu')(hidden)
-Z_lsgms = Dense(K, name='en_var')(hidden)
-
-
-def sampling(args):
-    
-    Z_mu, Z_lsgms = args
-    epsilon = backend.random_normal(shape=(backend.shape(Z_mu)[0], K), mean=0., stddev=1.0)
-    
-    return Z_mu + backend.exp(Z_lsgms) * epsilon
-
-Z = Lambda(sampling, output_shape=(K,))([Z_mu, Z_lsgms])
+Z,Z_lsgms,Z_mu = ars.encoder(X, D2, img_chns, filters, num_conv, intermediate_dim, K)
 
 # In[]: we instantiate these layers separately so as to reuse them later
-decoder_hid = Dense(intermediate_dim, activation='relu')
-decoder_upsample = Dense(filters * 14 * 14, activation='relu')
 
-if backend.image_data_format() == 'channels_first':
-    output_shape = (batch_size, filters, 14, 14)
-else:
-    output_shape = (batch_size, 14, 14, filters)
-
-decoder_reshape = Reshape(output_shape[1:])
-decoder_deconv_1 = Conv2DTranspose(filters,
-                                   kernel_size=num_conv,
-                                   padding='same',
-                                   strides=1,
-                                   activation='relu')
-decoder_deconv_2 = Conv2DTranspose(filters,
-                                   kernel_size=num_conv,
-                                   padding='same',
-                                   strides=1,
-                                   activation='relu')
-if backend.image_data_format() == 'channels_first':
-    output_shape = (batch_size, filters, 29, 29)
-else:
-    output_shape = (batch_size, 29, 29, filters)
-decoder_deconv_3_upsamp = Conv2DTranspose(filters,
-                                          kernel_size=(3, 3),
-                                          strides=(2, 2),
-                                          padding='valid',
-                                          activation='relu')
-decoder_mean_squash_mu = Conv2D(img_chns,
-                             kernel_size=2,
-                             padding='valid',
-                             activation='sigmoid')
-
-decoder_mean_squash_lsgms= Conv2D(img_chns,
-                             kernel_size=2,
-                             padding='valid',
-                             activation='tanh')
-
-hid_decoded = decoder_hid(Z)
-up_decoded = decoder_upsample(hid_decoded)
-reshape_decoded = decoder_reshape(up_decoded)
-deconv_1_decoded = decoder_deconv_1(reshape_decoded)
-deconv_2_decoded = decoder_deconv_2(deconv_1_decoded)
-x_decoded_relu = decoder_deconv_3_upsamp(deconv_2_decoded)
-X_mu = decoder_mean_squash_mu (x_decoded_relu)
-X_lsgms = decoder_mean_squash_lsgms (x_decoded_relu)
+decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms=ars.decoderars(intermediate_dim, filters, batch_size, num_conv, img_chns)
+X_mu,X_lsgms=ars.decoder(Z, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
 
 # In[]:define objective function
 logc = np.log(2 * np.pi).astype(np.float32)
