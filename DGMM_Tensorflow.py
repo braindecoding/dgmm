@@ -230,7 +230,8 @@ def obj(X, X_mu):
 
 DGMM = Model(inputs=[X, Y, Y_mu, Y_lsgms], outputs=X_mu)
 
-opt_method = optimizers.legacy.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+#opt_method = optimizers.legacy.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+opt_method = optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
 DGMM.compile(optimizer = opt_method, loss = obj)
 DGMM.summary()
