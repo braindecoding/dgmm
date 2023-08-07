@@ -24,7 +24,7 @@ from tensorflow.keras import metrics
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
-from lib import prepro,ars,obj
+from lib import prepro,ars,obj,init
 
 # In[]: Load dataset X stimulus Y fMRI
 resolution = 28
@@ -127,18 +127,13 @@ X_mu_predict,X_lsgms_predict=ars.decoders(Z_predict, decoder_hid,decoder_upsampl
 imagereconstruct = Model(inputs=Z_predict, outputs=X_mu_predict)
 
 # In[]: Initialization
-Z_mu = np.mat(random.random(size=(numTrn,K))).astype(np.float32)
-B_mu = np.mat(random.random(size=(K,D2))).astype(np.float32)
-R_mu = np.mat(random.random(size=(numTrn,C))).astype(np.float32)
-sigma_r = np.mat(np.eye((C))).astype(np.float32)
-H_mu = np.mat(random.random(size=(C,D2))).astype(np.float32)
-sigma_h = np.mat(np.eye((C))).astype(np.float32)
 
-tau_mu = tau_alpha / tau_beta
-eta_mu = eta_alpha / eta_beta
-gamma_mu = gamma_alpha / gamma_beta
-
+Z_mu,B_mu,R_mu,H_mu=init.random0or1withmatrixsize(numTrn, K, C, D2)
 Y_mu = np.array(Z_mu * B_mu + R_mu * H_mu).astype(np.float32)
+
+sigma_r,sigma_h = init.matriksidentitasukuran(C)
+
+tau_mu,eta_mu,gamma_mu=init.alphabagibeta(tau_alpha,tau_beta,eta_alpha,eta_beta,gamma_alpha,gamma_beta)
 Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
 savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
