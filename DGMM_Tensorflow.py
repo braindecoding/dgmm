@@ -73,7 +73,7 @@ else:
 
 
 # In[]: Building the architechture
-X = Input(shape=original_img_size)
+X = Input(shape=original_img_size)#dimensi stimulus
 Y = Input(shape=(D2,))#dimensi fmri
 Y_mu = Input(shape=(D2,))
 Y_lsgms = Input(shape=(D2,))
@@ -82,8 +82,10 @@ Z,Z_lsgms,Z_mu = ars.encoder(X, D2, img_chns, filters, num_conv, intermediate_di
 
 # In[]: we instantiate these layers separately so as to reuse them later
 
+#X_mu,X_lsgms=ars.decoder(Z,intermediate_dim, filters, batch_size, num_conv, img_chns)
+# arsitekturnya dipake di bawahnya ketika compile model
 decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms=ars.decoderars(intermediate_dim, filters, batch_size, num_conv, img_chns)
-X_mu,X_lsgms=ars.decoder(Z, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
+X_mu,X_lsgms=ars.decoders(Z, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
 
 # In[]:define custom loss objective function
    
@@ -99,17 +101,23 @@ def custom_loss(X, X_mu):#stimulus asli dan hasil pembangkitan
 
 DGMM = Model(inputs=[X, Y, Y_mu, Y_lsgms], outputs=X_mu)
 
-#opt_method = optimizers.legacy.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-opt_method = optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+try:
+    opt_method = optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+except:
+    opt_method = optimizers.legacy.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    
 
 DGMM.compile(optimizer = opt_method, loss = custom_loss)
 DGMM.summary()
+
 # build a model to project inputs on the latent space
 encoder = Model(inputs=X, outputs=[Z_mu,Z_lsgms])
 # build a model to project inputs on the output space
 imagepredict = Model(inputs=X, outputs=[X_mu,X_lsgms])
 
 # build a digit generator that can sample from the learned distribution
+#X_mu_predict,Z_predict=ars.imagereconstruct(K, intermediate_dim, filters, batch_size, num_conv, img_chns)
+
 Z_predict = Input(shape=(K,))
 _hid_decoded = decoder_hid(Z_predict)
 _up_decoded = decoder_upsample(_hid_decoded)
@@ -118,7 +126,9 @@ _deconv_1_decoded = decoder_deconv_1(_reshape_decoded)
 _deconv_2_decoded = decoder_deconv_2(_deconv_1_decoded)
 _x_decoded_relu = decoder_deconv_3_upsamp(_deconv_2_decoded)
 X_mu_predict = decoder_mean_squash_mu(_x_decoded_relu)
-X_lsgms_predict = decoder_mean_squash_mu(_x_decoded_relu)
+
+# X_lsgms_predict = decoder_mean_squash_mu(_x_decoded_relu)
+
 imagereconstruct = Model(inputs=Z_predict, outputs=X_mu_predict)
 
 # In[]: Initialization
