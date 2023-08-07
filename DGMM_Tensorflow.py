@@ -24,7 +24,7 @@ from tensorflow.keras import metrics
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
-from lib import prepro,ars,obj,init
+from lib import prepro,ars,obj,init,calculate
 
 # In[]: Load dataset X stimulus Y fMRI
 resolution = 28
@@ -50,8 +50,10 @@ gamma_beta = 1
 
 Beta = 1 # Beta-VAE for Learning Disentangled Representations
 rho=0.1  # posterior regularization parameter
+
 k=10     # k-nearest neighbors
 t = 10.0 # kernel parameter in similarity measure
+
 L = 100   # Monte-Carlo sampling
 
 np.random.seed(1000)
@@ -138,6 +140,7 @@ Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
 savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
 S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
+#S=calculate.S(k, t, Y_train, Y_test)
 
 # In[]: Loop training
 for l in range(maxiter):
