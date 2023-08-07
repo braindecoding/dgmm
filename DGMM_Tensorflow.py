@@ -24,7 +24,7 @@ from tensorflow.keras import metrics
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
-from lib import prepro,ars
+from lib import prepro,ars,obj
 
 # In[]: Load dataset X stimulus Y fMRI
 resolution = 28
@@ -85,29 +85,16 @@ Z,Z_lsgms,Z_mu = ars.encoder(X, D2, img_chns, filters, num_conv, intermediate_di
 decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms=ars.decoderars(intermediate_dim, filters, batch_size, num_conv, img_chns)
 X_mu,X_lsgms=ars.decoder(Z, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
 
-# In[]:define objective function
-logc = np.log(2 * np.pi).astype(np.float32)
-def X_normal_logpdf(x, mu, lsgms):
-    lsgms = backend.flatten(lsgms)   
-    return backend.mean(-(0.5 * logc + 0.5 * lsgms) - 0.5 * ((x - mu)**2 / backend.exp(lsgms)), axis=-1)
-
-def Y_normal_logpdf(y, mu, lsgms):  
-    return backend.mean(-(0.5 * logc + 0.5 * lsgms) - 0.5 * ((y - mu)**2 / backend.exp(lsgms)), axis=-1)
+# In[]:define custom loss objective function
    
-def obj(X, X_mu):
+def custom_loss(X, X_mu):#stimulus asli dan hasil pembangkitan
     X = backend.flatten(X)
-    X_mu = backend.flatten(X_mu)
-    
+    X_mu = backend.flatten(X_mu) 
     Lp = 0.5 * backend.mean( 1 + Z_lsgms - backend.square(Z_mu) - backend.exp(Z_lsgms), axis=-1)     
-    
     Lx =  - metrics.binary_crossentropy(X, X_mu) # Pixels have a Bernoulli distribution  
-               
-    Ly =  Y_normal_logpdf(Y, Y_mu, Y_lsgms) # Voxels have a Gaussian distribution
-        
+    Ly =  obj.Y_normal_logpdf(Y, Y_mu, Y_lsgms,backend) # Voxels have a Gaussian distribution
     lower_bound = backend.mean(Lp + 10000 * Lx + Ly)
-    
     cost = - lower_bound
-              
     return  cost 
 
 DGMM = Model(inputs=[X, Y, Y_mu, Y_lsgms], outputs=X_mu)
@@ -115,7 +102,7 @@ DGMM = Model(inputs=[X, Y, Y_mu, Y_lsgms], outputs=X_mu)
 #opt_method = optimizers.legacy.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 opt_method = optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
-DGMM.compile(optimizer = opt_method, loss = obj)
+DGMM.compile(optimizer = opt_method, loss = custom_loss)
 DGMM.summary()
 # build a model to project inputs on the latent space
 encoder = Model(inputs=X, outputs=[Z_mu,Z_lsgms])
