@@ -81,14 +81,14 @@ Y_lsgms = Input(shape=(D2,))
 Z,Z_lsgms,Z_mu = ars.encoder(X, D2, img_chns, filters, num_conv, intermediate_dim, K)
 
 # In[]: we instantiate these layers separately so as to reuse them later
-
-#X_mu,X_lsgms=ars.decoder(Z,intermediate_dim, filters, batch_size, num_conv, img_chns)
-# arsitekturnya dipake di bawahnya ketika compile model
 decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms=ars.decoderars(intermediate_dim, filters, batch_size, num_conv, img_chns)
+# arsitekturnya dipake di bawahnya ketika compile model, jika ingin membuat layer baru lagi :
+#Namun, perlu diingat bahwa dengan pendekatan ini, Anda tidak akan dapat menggunakan kembali layer yang sama, karena setiap kali Anda memanggil fungsi decoder, layer baru akan dibuat. Jika Anda ingin menggunakan kembali layer yang sama, Anda harus tetap membuatnya di luar fungsi dan mengirimkannya sebagai argumen, seperti yang Anda lakukan sebelumnya.
+#X_mu,X_lsgms=ars.decoder(Z,intermediate_dim, filters, batch_size, num_conv, img_chns)
+
 X_mu,X_lsgms=ars.decoders(Z, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
 
-# In[]:define custom loss objective function
-   
+# In[]:define custom loss objective function   
 def custom_loss(X, X_mu):#stimulus asli dan hasil pembangkitan
     X = backend.flatten(X)
     X_mu = backend.flatten(X_mu) 
@@ -116,18 +116,9 @@ encoder = Model(inputs=X, outputs=[Z_mu,Z_lsgms])
 imagepredict = Model(inputs=X, outputs=[X_mu,X_lsgms])
 
 # build a digit generator that can sample from the learned distribution
-#X_mu_predict,Z_predict=ars.imagereconstruct(K, intermediate_dim, filters, batch_size, num_conv, img_chns)
-
 Z_predict = Input(shape=(K,))
-_hid_decoded = decoder_hid(Z_predict)
-_up_decoded = decoder_upsample(_hid_decoded)
-_reshape_decoded = decoder_reshape(_up_decoded)
-_deconv_1_decoded = decoder_deconv_1(_reshape_decoded)
-_deconv_2_decoded = decoder_deconv_2(_deconv_1_decoded)
-_x_decoded_relu = decoder_deconv_3_upsamp(_deconv_2_decoded)
-X_mu_predict = decoder_mean_squash_mu(_x_decoded_relu)
 
-# X_lsgms_predict = decoder_mean_squash_mu(_x_decoded_relu)
+X_mu_predict,X_lsgms_predict=ars.decoders(Z_predict, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
 
 imagereconstruct = Model(inputs=Z_predict, outputs=X_mu_predict)
 
