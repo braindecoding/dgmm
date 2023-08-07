@@ -95,10 +95,10 @@ def decoderars(intermediate_dim,filters,batch_size,num_conv,img_chns):
                                        padding='same',
                                        strides=1,
                                        activation='relu')
-    if backend.image_data_format() == 'channels_first':
-        output_shape = (batch_size, filters, 29, 29)
-    else:
-        output_shape = (batch_size, 29, 29, filters)
+    # if backend.image_data_format() == 'channels_first':
+    #     output_shape = (batch_size, filters, 29, 29)
+    # else:
+    #     output_shape = (batch_size, 29, 29, filters)
     decoder_deconv_3_upsamp = Conv2DTranspose(filters,
                                               kernel_size=(3, 3),
                                               strides=(2, 2),

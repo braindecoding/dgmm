@@ -73,8 +73,10 @@ else:
 
 
 # In[]: Building the architechture
-X = Input(shape=original_img_size)#dimensi stimulus
-Y = Input(shape=(D2,))#dimensi fmri
+#input arsitektur dimensi stimulus
+X = Input(shape=original_img_size)
+#input arsitektur dimensi fmri
+Y = Input(shape=(D2,))
 Y_mu = Input(shape=(D2,))
 Y_lsgms = Input(shape=(D2,))
 
@@ -99,6 +101,8 @@ def custom_loss(X, X_mu):#stimulus asli dan hasil pembangkitan
     cost = - lower_bound
     return  cost 
 
+
+#Jika Y, Y_mu, dan Y_lsgms hanya digunakan dalam perhitungan kerugian dan tidak berkontribusi langsung pada perhitungan output dari model, mereka mungkin berfungsi sebagai "label" tambahan yang membantu model belajar representasi yang lebih baik dari data dengan memberikan lebih banyak informasi tentang bagaimana kerugian harus dihitung.
 DGMM = Model(inputs=[X, Y, Y_mu, Y_lsgms], outputs=X_mu)
 
 try:
