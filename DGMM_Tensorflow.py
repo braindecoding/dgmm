@@ -138,8 +138,8 @@ tau_mu,eta_mu,gamma_mu=init.alphabagibeta(tau_alpha,tau_beta,eta_alpha,eta_beta,
 Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
 savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
-#S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
-S=calculate.S(k, t, Y_train, Y_test)
+S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
+#S=calculate.S(k, t, Y_train, Y_test)
 
 # In[]: Loop training
 for l in range(maxiter):
@@ -197,6 +197,7 @@ with open('dgmm.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
 imagereconstruct.save("dgmmmodel.h5")
 
 # In[]: reconstruct X (image) from Y (fmri)
+print("reconstruct X (image) from Y (fmri)")
 X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))
 HHT = H_mu * H_mu.T + D2 * sigma_h
 Temp = gamma_mu * np.mat(np.eye(D2)) - (gamma_mu**2) * (H_mu.T * (np.mat(np.eye(C)) + gamma_mu * HHT).I * H_mu)

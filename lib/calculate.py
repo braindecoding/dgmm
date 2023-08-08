@@ -27,10 +27,7 @@ def S(k, t,Y_train,Y_test):
     temp2 = np.zeros((ntrn, ntest))
     for i in range(ntest):
         fmri = np.vstack([Y_train, Y_test[i, :]])
-        print(fmri)
-        print(options)
         temp,elapsed_time = constructW(fmri, options)
-        print(temp)
         temp2[:, i] = temp[:-1, -1]
 
     S = np.zeros((ntrn, ntest))
