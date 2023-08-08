@@ -11,6 +11,7 @@ options.WeightMode = 'HeatKernel';
 options.NeighborMode = 'KNN';
 options.k = k;  % nearest neighbor
 options.t = t;
+
 ntrn=size(Y_train,1);
 ntest=size(Y_test,1);
 for i=1:ntest
