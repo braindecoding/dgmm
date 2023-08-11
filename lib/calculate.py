@@ -38,15 +38,52 @@ def S(k, t,Y_train,Y_test):
 
     return S
 
-def EuDist2(X, Y=None, squared=True):
-    """Compute squared Euclidean distances between data points."""
-    if Y is None:
-        Y = X
-    diff = X[:, np.newaxis, :] - Y[np.newaxis, :, :]
-    distances = np.sum(diff**2, axis=-1)
-    if not squared:
-        distances = np.sqrt(distances)
-    return distances
+
+def EuDist2(fea_a, fea_b=None, bSqrt=True):
+    """
+    computes the Euclidean distance between two sets of feature vectors fea_a and fea_b. 
+    If fea_b is not provided, it computes the pairwise distances within fea_a.
+    
+    Parameters:
+        fea_a: ndarray of shape (nSample_a, nFeature)
+        fea_b: ndarray of shape (nSample_b, nFeature), optional
+        bSqrt: bool, optional, whether to take the square root of the result
+        
+    Returns:
+        D: ndarray of shape (nSample_a, nSample_a) or (nSample_a, nSample_b)
+    """
+
+    if fea_b is None:
+        aa = np.sum(fea_a * fea_a, axis=1)
+        ab = np.dot(fea_a, fea_a.T)
+
+        if np.issparse(aa):
+            aa = aa.toarray()
+
+        D = aa[:, np.newaxis] + aa - 2*ab
+        D[D < 0] = 0
+
+        if bSqrt:
+            D = np.sqrt(D)
+
+        D = np.maximum(D, D.T)
+        
+    else:
+        aa = np.sum(fea_a * fea_a, axis=1)
+        bb = np.sum(fea_b * fea_b, axis=1)
+        ab = np.dot(fea_a, fea_b.T)
+
+        if np.issparse(aa):
+            aa = aa.toarray()
+            bb = bb.toarray()
+
+        D = aa[:, np.newaxis] + bb - 2*ab
+        D[D < 0] = 0
+
+        if bSqrt:
+            D = np.sqrt(D)
+            
+    return D
 
 # Placeholder for LLE_Matrix function
 def LLE_Matrix(data, k, regLLE):
@@ -54,6 +91,61 @@ def LLE_Matrix(data, k, regLLE):
     W = None  # Placeholder
     M = None  # Placeholder
     return W, M
+
+
+
+def constructW2(X, options=None):
+    # Example usage:
+    # X = np.array([[1, 2], [3, 4], [2, 2], [8, 9]])
+    # options = {
+    #     'NeighborMode': 'KNN',
+    #     'WeightMode': 'Binary',
+    #     'k': 2
+    # }
+    # W = constructW(X, options)
+    # print(W)
+    if options is None:
+        options = {}
+
+    # Set default options
+    metric = options.get('Metric', 'Cosine')
+    neighbor_mode = options.get('NeighborMode', 'KNN')
+    weight_mode = options.get('WeightMode', 'Binary')
+    k = options.get('k', 5)  # Default number of neighbors
+
+    num_samples = X.shape[0]
+    W = np.zeros((num_samples, num_samples))
+
+    # If using supervised mode
+    if neighbor_mode == 'Supervised':
+        labels = options.get('label')
+        if weight_mode == 'Binary':
+            for i in range(num_samples):
+                for j in range(num_samples):
+                    if labels[i] == labels[j]:
+                        W[i, j] = 1
+        # Add other weight modes here if needed
+
+    # If using KNN
+    elif neighbor_mode == 'KNN':
+        if k > 0:
+            nbrs = NearestNeighbors(n_neighbors=k+1, metric=metric.lower()).fit(X)
+            distances, indices = nbrs.kneighbors(X)
+            for i in range(num_samples):
+                if weight_mode == 'Binary':
+                    W[i, indices[i, 1:]] = 1
+                elif weight_mode == 'HeatKernel':
+                    W[i, indices[i, 1:]] = np.exp(-distances[i, 1:]**2)
+                # Add other weight modes here if needed
+
+    # Normalize the weight matrix (optional)
+    # sum_W = np.sum(W, axis=1)
+    # W = W / sum_W[:, np.newaxis]
+
+    return W
+
+
+
 
 def constructW(fea, options=None):
     # Melengkapi opsi di options
@@ -232,78 +324,54 @@ def constructW(fea, options=None):
         else:
             raise ValueError("WeightMode does not exist!")
     # For KNN #
+    bBinary = options.get('WeightMode') == 'Binary'
+    bNormalized = options.get('bNormalized', False)
+    bSelfConnected = options.get('bSelfConnected', True)
     if options["NeighborMode"].lower() == "knn" and options["k"] > 0:
-        if options["Metric"].lower() == "euclidean":
-            G = np.zeros((nSmp * (options["k"] + 1), 3))
-            
-            # Here's where you might use some sort of logic like distance calculations,
-            # matrix manipulations, etc., to populate G.
-            # This is just a placeholder.
-            
-            W = csr_matrix((G[:, 2], (G[:, 0].astype(int), G[:, 1].astype(int))), shape=(nSmp, nSmp))
-        else:
-            # Implement the cosine logic here
-            pass  # Placeholder logic
-    # For KNN #
-    if options["NeighborMode"].lower() == "knn" and options["k"] > 0:
-        # Using Euclidean distance for KNN
-        if options["Metric"].lower() == "euclidean":
-            # Get k nearest neighbors using sklearn's NearestNeighbors
-            nbrs = NearestNeighbors(n_neighbors=options["k"]+1, algorithm='ball_tree', metric='euclidean').fit(fea)
-            distances, indices = nbrs.kneighbors(fea)
-            
-            # Convert neighbors into a sparse graph representation
-            rows = np.repeat(np.arange(nSmp), options["k"]+1)
-            cols = indices.ravel()
-            
-            # Depending on the weight mode, we'll compute the weights differently
-            if options["WeightMode"].lower() == "binary":
-                weights = np.ones_like(cols)
-            elif options["WeightMode"].lower() == "heatkernel":
-                t = options.get("t", 1.0)  # get the t parameter
-                weights = np.exp(-distances.ravel() / (2 * t ** 2))
+        print("masuk mode KNN")
+        k = options.get('k')
+        G = np.zeros((nSmp*(k+1), 3))
+        for i in range(1, int(np.ceil(nSmp/BlockSize)) + 1):
+            if i == int(np.ceil(nSmp/BlockSize)):
+                smpIdx = np.arange((i-1)*BlockSize, nSmp)
             else:
-                raise ValueError('Unsupported WeightMode for Euclidean metric!')
-            
-            # Create sparse adjacency matrix
-            G = csr_matrix((weights, (rows, cols)), shape=(nSmp, nSmp))
-            G = G.maximum(G.T)  # Ensure the graph is symmetric
-
-            # If self connections are not allowed, remove diagonal
-            if not options.get("bSelfConnected", True):
-                G.setdiag(0)
-            W = G.copy()
+                smpIdx = np.arange((i-1)*BlockSize, i*BlockSize)
+                
+            if options.get('Metric') == 'Euclidean':
+                dist = EuDist2(fea[smpIdx], fea)
+                idx = np.argsort(dist, axis=1)[:, :k+1]
+                dump = np.sort(dist, axis=1)[:, :k+1]
+                if not bBinary:
+                    dump = np.exp(-dump / (2 * options.get('t')**2))
+                G[smpIdx[0]*(k+1):smpIdx[-1]*(k+1)+k+1] = np.column_stack((
+                    np.repeat(smpIdx, k+1),
+                    idx.ravel(),
+                    dump.ravel()
+                ))
+            else:
+                # Here, assume cosine similarity for non-euclidean
+                if not bNormalized:
+                    feaNorm = np.linalg.norm(fea, axis=1)
+                    for i in range(nSmp):
+                        fea[i] = fea[i] / max(1e-12, feaNorm[i])
+                dist = np.dot(fea[smpIdx], fea.T)
+                idx = np.argsort(-dist, axis=1)[:, :k+1]
+                dump = -np.sort(-dist, axis=1)[:, :k+1]
+                G[smpIdx[0]*(k+1):smpIdx[-1]*(k+1)+k+1] = np.column_stack((
+                    np.repeat(smpIdx, k+1),
+                    idx.ravel(),
+                    dump.ravel()
+                ))
+        W = csr_matrix((G[:,2], (G[:,0].astype(int), G[:,1].astype(int))), shape=(nSmp, nSmp))
         
-        # Using Cosine distance for KNN
-        elif options["Metric"].lower() == "cosine":
-            # Normalize the feature vectors
-            fea_norm = np.linalg.norm(fea, axis=1, keepdims=True)
-            fea = np.where(fea_norm > 0, fea / fea_norm, fea)
-            
-            # Get k nearest neighbors based on cosine similarity
-            nbrs = NearestNeighbors(n_neighbors=options["k"]+1, algorithm='brute', metric='cosine').fit(fea)
-            distances, indices = nbrs.kneighbors(fea)
-
-            # Convert neighbors into a sparse graph representation
-            rows = np.repeat(np.arange(nSmp), options["k"]+1)
-            cols = indices.ravel()
-
-            # Cosine similarity to weight
-            weights = 1 - distances.ravel()
-            
-            # Create sparse adjacency matrix
-            G = csr_matrix((weights, (rows, cols)), shape=(nSmp, nSmp))
-            G = G.maximum(G.T)  # Ensure the graph is symmetric
-
-            # If self connections are not allowed, remove diagonal
-            if not options.get("bSelfConnected", True):
-                G.setdiag(0)
-
-            W = G.copy()
-        else:
-            raise ValueError('Unsupported metric!')
-    else:
-        raise ValueError('Invalid options for NeighborMode or k!')
+        if bBinary:
+            W.data[:] = 1
+        
+        if not bSelfConnected:
+            W.setdiag(0)
+        
+        W = W.maximum(W.transpose()).tocsr()
+        return W
 
 
     #return part

@@ -72,6 +72,10 @@ if backend.image_data_format() == 'channels_first': # atau 'channels_last'
     original_img_size = (img_chns, img_rows, img_cols)#1,28, 28
 else:
     original_img_size = (img_rows, img_cols, img_chns)#28, 28, 1
+    
+#savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
+#S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
+S=calculate.S(k, t, Y_train, Y_test)
 
 # In[]: Building the architechture
 #input arsitektur dimensi stimulus
@@ -137,8 +141,8 @@ sigma_r,sigma_h = init.matriksidentitasukuran(C)
 tau_mu,eta_mu,gamma_mu=init.alphabagibeta(tau_alpha,tau_beta,eta_alpha,eta_beta,gamma_alpha,gamma_beta)
 Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
-savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
-S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
+#savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
+#S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
 #S=calculate.S(k, t, Y_train, Y_test)
 
 # In[]: Loop training
