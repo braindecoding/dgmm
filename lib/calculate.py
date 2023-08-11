@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, issparse
 from time import time
 import warnings
 from sklearn.neighbors import NearestNeighbors
@@ -57,7 +57,7 @@ def EuDist2(fea_a, fea_b=None, bSqrt=True):
         aa = np.sum(fea_a * fea_a, axis=1)
         ab = np.dot(fea_a, fea_a.T)
 
-        if np.issparse(aa):
+        if issparse(aa):
             aa = aa.toarray()
 
         D = aa[:, np.newaxis] + aa - 2*ab
@@ -73,7 +73,7 @@ def EuDist2(fea_a, fea_b=None, bSqrt=True):
         bb = np.sum(fea_b * fea_b, axis=1)
         ab = np.dot(fea_a, fea_b.T)
 
-        if np.issparse(aa):
+        if issparse(aa):
             aa = aa.toarray()
             bb = bb.toarray()
 
