@@ -160,11 +160,11 @@ for l in range(maxiter):
     Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2)))   
 
 # In[]: save model and parameter results
-import pickle
-with open('dgmm.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-    pickle.dump([numTest, img_chns, img_rows, img_cols,H_mu,D2,sigma_h,gamma_mu,C,S,B_mu,rho,K,Y_test,Z_mu,L,resolution,X_test], f)
+# import pickle
+# with open('dgmm.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+#     pickle.dump([numTest, img_chns, img_rows, img_cols,H_mu,D2,sigma_h,gamma_mu,C,S,B_mu,rho,K,Y_test,Z_mu,L,resolution,X_test], f)
 
-imagereconstruct.save("dgmmmodel.h5")
+# imagereconstruct.save("dgmmmodel.h5")
 
 # In[]: reconstruct X (image) from Y (fmri)
 print("reconstruct X (image) from Y (fmri)")
