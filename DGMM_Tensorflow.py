@@ -177,7 +177,7 @@ for i in range(numTest):
     z_mu_test = (z_sigma_test * (B_mu * Temp * (np.mat(Y_test)[i,:]).T + rho * np.mat(Z_mu).T * s )).T
     temp_mu = np.zeros((1,img_chns, img_rows, img_cols))#1,1,28,28
     epsilon_std = 1
-    for l in range(L):
+    for l in range(L):#Looping untuk Monte Carlo Sampling
         epsilon=np.random.normal(0,epsilon_std,1)
         z_test = z_mu_test + np.sqrt(np.diag(z_sigma_test))*epsilon
         x_reconstructed_mu = imagereconstruct.predict(z_test, batch_size=1)#1,28,28,1
