@@ -1,4 +1,4 @@
-# dgmm
+# Deep Generative Multi-view Model (DGMM) 
 DGMM from https://github.com/ChangdeDu/DGMM
 
 ```sh
