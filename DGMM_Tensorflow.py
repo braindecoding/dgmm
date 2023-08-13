@@ -72,10 +72,24 @@ if backend.image_data_format() == 'channels_first': # atau 'channels_last'
     original_img_size = (img_chns, img_rows, img_cols)#1,28, 28
 else:
     original_img_size = (img_rows, img_cols, img_chns)#28, 28, 1
-    
+
+# In[]:     
 #savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
+
 #S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
-S=calculate.S(k, t, Y_train, Y_test)
+#s=S[:,0]
+
+S=np.mat(calculate.S(k, t, Y_train, Y_test))
+#s=S[:,0]
+
+
+
+##### testing only rolly
+#for i in range(numTest):
+    #print("for i in range(numTest):")
+    #print(i)
+    #s=S[:,i]
+    #print(s)
 
 # In[]: Building the architechture
 #input arsitektur dimensi stimulus
@@ -206,7 +220,10 @@ X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))
 HHT = H_mu * H_mu.T + D2 * sigma_h
 Temp = gamma_mu * np.mat(np.eye(D2)) - (gamma_mu**2) * (H_mu.T * (np.mat(np.eye(C)) + gamma_mu * HHT).I * H_mu)
 for i in range(numTest):
+    print("for i in range(numTest):")
+    print(i)
     s=S[:,i]
+    print(s)
     z_sigma_test = (B_mu * Temp * B_mu.T + (1 + rho * s.sum(axis=0)[0,0]) * np.mat(np.eye(K)) ).I
     z_mu_test = (z_sigma_test * (B_mu * Temp * (np.mat(Y_test)[i,:]).T + rho * np.mat(Z_mu).T * s )).T
     temp_mu = np.zeros((1,img_chns, img_rows, img_cols))#1,1,28,28

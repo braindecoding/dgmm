@@ -34,7 +34,8 @@ def encoder(X,D2,img_chns,filters,num_conv,intermediate_dim,K):
     
     Z_mu = Dense(K, name='en_mu')(hidden)
     Z_lsgms = Dense(K, name='en_var')(hidden)
-    
+    # fungsi lambda berguna untuk pura2 menambah layer dengan hanya operasi perhitungan saja 
+    # Sebagai contoh sederhana, misalkan Anda memiliki tensor masukan dan Anda ingin mengkuadratkannya.
     Z = Lambda(sampling, output_shape=(K,))([Z_mu, Z_lsgms,K])
     return Z,Z_lsgms,Z_mu
 

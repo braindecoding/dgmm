@@ -224,6 +224,7 @@ def constructW(fea, options=None):
     # You will need to fill in the logic here as per your needs
     # For Supervised #
     if options["NeighborMode"].lower() == "supervised":
+        print("masuk mode supervised")
         Label = np.unique(options["gnd"])
         nLabel = len(Label)
 
@@ -371,7 +372,7 @@ def constructW(fea, options=None):
             W.setdiag(0)
         
         W = W.maximum(W.transpose()).tocsr()
-        return W
+        #return W
 
 
     #return part
