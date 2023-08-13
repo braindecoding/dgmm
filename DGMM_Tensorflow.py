@@ -4,21 +4,17 @@
 Created on Wed Oct 11 15:50:17 2017
 https://github.com/ChangdeDu/DGMM
 @author: duchangde 
+Modified by @awangga
 """
 
 import os    
 os.environ['THEANO_FLAGS'] = "device=gpu"  
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import savemat
-from tensorflow.keras.layers import Input, Dense, Reshape
-from tensorflow.keras.layers import Conv2D, Conv2DTranspose
+from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend
-from numpy import random
 from tensorflow.keras import optimizers
-import matlab.engine
-eng=matlab.engine.start_matlab()
 from tensorflow.keras import metrics
 
 from tensorflow.python.framework.ops import disable_eager_execution
@@ -72,24 +68,6 @@ if backend.image_data_format() == 'channels_first': # atau 'channels_last'
     original_img_size = (img_chns, img_rows, img_cols)#1,28, 28
 else:
     original_img_size = (img_rows, img_cols, img_chns)#28, 28, 1
-
-# In[]:     
-#savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
-
-#S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
-#s=S[:,0]
-
-S=np.mat(calculate.S(k, t, Y_train, Y_test))
-#s=S[:,0]
-
-
-
-##### testing only rolly
-#for i in range(numTest):
-    #print("for i in range(numTest):")
-    #print(i)
-    #s=S[:,i]
-    #print(s)
 
 # In[]: Building the architechture
 #input arsitektur dimensi stimulus
@@ -155,9 +133,7 @@ sigma_r,sigma_h = init.matriksidentitasukuran(C)
 tau_mu,eta_mu,gamma_mu=init.alphabagibeta(tau_alpha,tau_beta,eta_alpha,eta_beta,gamma_alpha,gamma_beta)
 Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
-#savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
-#S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
-#S=calculate.S(k, t, Y_train, Y_test)
+S=np.mat(calculate.S(k, t, Y_train, Y_test))
 
 # In[]: Loop training
 for l in range(maxiter):

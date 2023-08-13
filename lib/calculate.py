@@ -3,9 +3,7 @@ from scipy.sparse import csr_matrix, issparse
 from time import time
 import warnings
 from sklearn.neighbors import NearestNeighbors
-import matlab
 
-eng=matlab.engine.start_matlab()
 
 def S(k, t,Y_train,Y_test):
     # Assuming data is loaded from somewhere, e.g., from a file
