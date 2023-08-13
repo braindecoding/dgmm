@@ -138,51 +138,25 @@ S=np.mat(calculate.S(k, t, Y_train, Y_test))
 # In[]: Loop training
 
 for l in range(maxiter):
-    print ('**************************************     iter= ', l)
+    print ('**************************************     iter = ', l)
     # update Z
     Z_mu,Z_lsgms=train.updateZ(DGMM, X_train, Y_train, Y_mu, Y_lsgms, nb_epoch, batch_size, encoder)
-    
     # update B
     B_mu,sigma_b=train.updateB(Z_lsgms, Z_mu, K, tau_mu, gamma_mu, Y_train, R_mu, H_mu)
-    
     # update H
-    H_mu,sigma_h=train.updateH(R_mu, numTrn, sigma_r, eta_mu, C, gamma_mu, Y_train, Z_mu, B_mu)
-    # RTR_mu = R_mu.T * R_mu + numTrn * sigma_r
-    # sigma_h = (eta_mu * np.mat(np.eye(C)) + gamma_mu * RTR_mu).I
-    # H_mu = sigma_h * gamma_mu * R_mu.T * (np.mat(Y_train) - Z_mu * B_mu)
-    
+    H_mu,sigma_h=train.updateH(R_mu, numTrn, sigma_r, eta_mu, C, gamma_mu, Y_train, Z_mu, B_mu) 
     # update R
-    R_mu,sigma_r=train.updateR(H_mu, D2, sigma_h, C, gamma_mu, Y_train, Z_mu, B_mu)
-    # HHT_mu = H_mu * H_mu.T + D2 * sigma_h
-    # sigma_r = (np.mat(np.eye(C)) + gamma_mu * HHT_mu).I
-    # R_mu = (sigma_r * gamma_mu * H_mu * (np.mat(Y_train) - Z_mu * B_mu).T).T  
+    R_mu,sigma_r=train.updateR(H_mu, D2, sigma_h, C, gamma_mu, Y_train, Z_mu, B_mu) 
+    # calculate Y_mu   
+    Y_mu = np.array(Z_mu * B_mu + R_mu * H_mu) 
     
     # update tau
     tau_mu=train.updateTau(tau_alpha, K, D2, tau_beta, B_mu, sigma_b)
-    # tau_alpha_new = tau_alpha + 0.5 * K * D2
-    # tau_beta_new = tau_beta + 0.5 * ((np.diag(B_mu.T * B_mu)).sum() + D2 * sigma_b.trace())
-    # tau_mu = tau_alpha_new / tau_beta_new
-    # tau_mu = tau_mu[0,0] 
-    
     # update eta
     eta_mu=train.updateEta(eta_alpha, C, D2, eta_beta, H_mu, sigma_h)
-    # eta_alpha_new = eta_alpha + 0.5 * C * D2
-    # eta_beta_new = eta_beta + 0.5 * ((np.diag(H_mu.T * H_mu)).sum() + D2 * sigma_h.trace())
-    # eta_mu = eta_alpha_new / eta_beta_new
-    # eta_mu = eta_mu[0,0] 
-    
     # update gamma
     gamma_mu=train.updateGamma(gamma_alpha, numTrn, D2, Y_train, Z_mu, B_mu, R_mu, H_mu, gamma_beta)
-    # gamma_alpha_new = gamma_alpha + 0.5 * numTrn * D2
-    # gamma_temp = np.mat(Y_train) - Z_mu * B_mu - R_mu * H_mu
-    # gamma_temp = np.multiply(gamma_temp, gamma_temp)
-    # gamma_temp = gamma_temp.sum(axis=0)
-    # gamma_temp = gamma_temp.sum(axis=1)
-    # gamma_beta_new = gamma_beta + 0.5 * gamma_temp
-    # gamma_mu = gamma_alpha_new / gamma_beta_new
-    # gamma_mu = gamma_mu[0,0] 
-    # calculate Y_mu   
-    Y_mu = np.array(Z_mu * B_mu + R_mu * H_mu) 
+    # calculate Y_lsgms
     Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2)))   
 
 # In[]: save model and parameter results
