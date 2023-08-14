@@ -39,43 +39,6 @@ def encoder(X,D2,img_chns,filters,num_conv,intermediate_dim,K):
     Z = Lambda(sampling, output_shape=(K,))([Z_mu, Z_lsgms,K])
     return Z,Z_lsgms,Z_mu
 
-def decoder(Z,intermediate_dim,filters,batch_size,num_conv,img_chns):
-    hid_decoded = Dense(intermediate_dim, activation='relu')(Z)
-    up_decoded = Dense(filters * 14 * 14, activation='relu')(hid_decoded)
-    if backend.image_data_format() == 'channels_first':
-        output_shape = (batch_size, filters, 14, 14)
-    else:
-        output_shape = (batch_size, 14, 14, filters)
-    reshape_decoded = Reshape(output_shape[1:])(up_decoded)
-    deconv_1_decoded = Conv2DTranspose(filters,
-                                       kernel_size=num_conv,
-                                       padding='same',
-                                       strides=1,
-                                       activation='relu')(reshape_decoded)
-    deconv_2_decoded = Conv2DTranspose(filters,
-                                       kernel_size=num_conv,
-                                       padding='same',
-                                       strides=1,
-                                       activation='relu')(deconv_1_decoded)
-    if backend.image_data_format() == 'channels_first':
-        output_shape = (batch_size, filters, 29, 29)
-    else:
-        output_shape = (batch_size, 29, 29, filters)
-    x_decoded_relu = Conv2DTranspose(filters,
-                                    kernel_size=(3, 3),
-                                    strides=(2, 2),
-                                    padding='valid',
-                                    activation='relu')(deconv_2_decoded)
-    X_mu = Conv2D(img_chns,
-                kernel_size=2,
-                padding='valid',
-                activation='sigmoid') (x_decoded_relu)
-    X_lsgms = Conv2D(img_chns,
-                    kernel_size=2,
-                    padding='valid',
-                    activation='tanh') (x_decoded_relu)
-    return X_mu,X_lsgms
-
 def decoderars(intermediate_dim,filters,batch_size,num_conv,img_chns):
     decoder_hid = Dense(intermediate_dim, activation='relu')
     decoder_upsample = Dense(filters * 14 * 14, activation='relu')
@@ -126,6 +89,45 @@ def decoders(Z,decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,dec
     X_mu = decoder_mean_squash_mu (x_decoded_relu)
     X_lsgms = decoder_mean_squash_lsgms (x_decoded_relu)
     return X_mu,X_lsgms
+
+def decoder(Z,intermediate_dim,filters,batch_size,num_conv,img_chns):
+    hid_decoded = Dense(intermediate_dim, activation='relu')(Z)
+    up_decoded = Dense(filters * 14 * 14, activation='relu')(hid_decoded)
+    if backend.image_data_format() == 'channels_first':
+        output_shape = (batch_size, filters, 14, 14)
+    else:
+        output_shape = (batch_size, 14, 14, filters)
+    reshape_decoded = Reshape(output_shape[1:])(up_decoded)
+    deconv_1_decoded = Conv2DTranspose(filters,
+                                       kernel_size=num_conv,
+                                       padding='same',
+                                       strides=1,
+                                       activation='relu')(reshape_decoded)
+    deconv_2_decoded = Conv2DTranspose(filters,
+                                       kernel_size=num_conv,
+                                       padding='same',
+                                       strides=1,
+                                       activation='relu')(deconv_1_decoded)
+    if backend.image_data_format() == 'channels_first':
+        output_shape = (batch_size, filters, 29, 29)
+    else:
+        output_shape = (batch_size, 29, 29, filters)
+    x_decoded_relu = Conv2DTranspose(filters,
+                                    kernel_size=(3, 3),
+                                    strides=(2, 2),
+                                    padding='valid',
+                                    activation='relu')(deconv_2_decoded)
+    X_mu = Conv2D(img_chns,
+                kernel_size=2,
+                padding='valid',
+                activation='sigmoid') (x_decoded_relu)
+    X_lsgms = Conv2D(img_chns,
+                    kernel_size=2,
+                    padding='valid',
+                    activation='tanh') (x_decoded_relu)
+    return X_mu,X_lsgms
+
+
 
 def imagereconstruct(K,intermediate_dim,filters,batch_size,num_conv,img_chns):
     Z_predict = Input(shape=(K,))

@@ -81,10 +81,6 @@ Z,Z_lsgms,Z_mu = ars.encoder(X, D2, img_chns, filters, num_conv, intermediate_di
 
 # In[]: we instantiate these layers separately so as to reuse them later
 decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms=ars.decoderars(intermediate_dim, filters, batch_size, num_conv, img_chns)
-# arsitekturnya dipake di bawahnya ketika compile model, jika ingin membuat layer baru lagi :
-#Namun, perlu diingat bahwa dengan pendekatan ini, Anda tidak akan dapat menggunakan kembali layer yang sama, karena setiap kali Anda memanggil fungsi decoder, layer baru akan dibuat. Jika Anda ingin menggunakan kembali layer yang sama, Anda harus tetap membuatnya di luar fungsi dan mengirimkannya sebagai argumen, seperti yang Anda lakukan sebelumnya.
-#X_mu,X_lsgms=ars.decoder(Z,intermediate_dim, filters, batch_size, num_conv, img_chns)
-
 X_mu,X_lsgms=ars.decoders(Z, decoder_hid,decoder_upsample,decoder_reshape,decoder_deconv_1,decoder_deconv_2,decoder_deconv_3_upsamp,decoder_mean_squash_mu,decoder_mean_squash_lsgms)
 
 # In[]:define custom loss objective function   
@@ -168,24 +164,26 @@ for l in range(maxiter):
 
 # In[]: reconstruct X (image) from Y (fmri)
 print("reconstruct X (image) from Y (fmri)")
-X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))
+X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))#empty array
 HHT = H_mu * H_mu.T + D2 * sigma_h
 Temp = gamma_mu * np.mat(np.eye(D2)) - (gamma_mu**2) * (H_mu.T * (np.mat(np.eye(C)) + gamma_mu * HHT).I * H_mu)
 for i in range(numTest):
     s=S[:,i]
-    z_sigma_test = (B_mu * Temp * B_mu.T + (1 + rho * s.sum(axis=0)[0,0]) * np.mat(np.eye(K)) ).I
-    z_mu_test = (z_sigma_test * (B_mu * Temp * (np.mat(Y_test)[i,:]).T + rho * np.mat(Z_mu).T * s )).T
+    z_sigma_test = (B_mu * Temp * B_mu.T + (1 + rho * s.sum(axis=0)[0,0]) * np.mat(np.eye(K)) ).I#mencari variansi / kuadrat standar deviasi
+    z_mu_test = (z_sigma_test * (B_mu * Temp * (np.mat(Y_test)[i,:]).T + rho * np.mat(Z_mu).T * s )).T#mencari nilai untuk inputan terbaik, biasanya dari rata2
     temp_mu = np.zeros((1,img_chns, img_rows, img_cols))#1,1,28,28
     epsilon_std = 1
     for l in range(L):#Looping untuk Monte Carlo Sampling
-        epsilon=np.random.normal(0,epsilon_std,1)
-        z_test = z_mu_test + np.sqrt(np.diag(z_sigma_test))*epsilon
+        epsilon=np.random.normal(0,epsilon_std,1)#ambil sampel acak atau noise
+        z_test = z_mu_test + np.sqrt(np.diag(z_sigma_test))*epsilon#nilai utama ditambahkan dengan standar deviasi
         x_reconstructed_mu = imagereconstruct.predict(z_test, batch_size=1)#1,28,28,1
         #edit rolly move axis
         x_reconstructed_mu=np.moveaxis(x_reconstructed_mu,-1,1)
         temp_mu = temp_mu + x_reconstructed_mu # ati2 nih disini main tambahin aja
-    x_reconstructed_mu = temp_mu / L
+    x_reconstructed_mu = temp_mu / L # mendapatkan rata2 dari semua rekonstruksi citra monte carlo
     X_reconstructed_mu[i,:,:,:] = x_reconstructed_mu
+    
+
 
 # In[]:# visualization the reconstructed images, output in var X_reconstructed_mu
 n = 10
