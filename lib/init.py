@@ -3,7 +3,7 @@ from numpy import random
 
 
 #Z_mu, B_mu, R_mu, dan H_mu diinisialisasi sebagai matriks dengan elemen acak yang dihasilkan oleh fungsi random.random dari library numpy. Fungsi ini menghasilkan angka acak antara 0 dan 1. Ukuran matriks ini ditentukan oleh variabel numTrn, K, C, dan D2.
-def random0or1withmatrixsize(numTrn,K,C,D2):
+def randombetween0and1withmatrixsize(numTrn,K,C,D2):
     Z_mu = np.mat(random.random(size=(numTrn,K))).astype(np.float32)
     B_mu = np.mat(random.random(size=(K,D2))).astype(np.float32)
     R_mu = np.mat(random.random(size=(numTrn,C))).astype(np.float32)

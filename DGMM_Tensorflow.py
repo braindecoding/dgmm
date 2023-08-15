@@ -121,7 +121,7 @@ imagereconstruct = Model(inputs=Z_predict, outputs=X_mu_predict)
 
 # In[]: Initialization
 
-Z_mu,B_mu,R_mu,H_mu=init.random0or1withmatrixsize(numTrn, K, C, D2)
+Z_mu,B_mu,R_mu,H_mu=init.randombetween0and1withmatrixsize(numTrn, K, C, D2)
 Y_mu = np.array(Z_mu * B_mu + R_mu * H_mu).astype(np.float32)
 
 sigma_r,sigma_h = init.matriksidentitasukuran(C)
