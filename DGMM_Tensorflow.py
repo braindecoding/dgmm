@@ -34,8 +34,8 @@ D1 = X_train.shape[1]*X_train.shape[2]*X_train.shape[3]
 D2 = Y_train.shape[1]
 K = 6 # dimensi latent space
 C = 5
-intermediate_dim = 128
-
+#intermediate_dim = 128
+intermediate_dim = 512
 #hyper-parameters
 tau_alpha = 1
 tau_beta = 1
@@ -47,7 +47,8 @@ gamma_beta = 1
 Beta = 1 # Beta-VAE for Learning Disentangled Representations
 rho=0.1  # posterior regularization parameter
 
-k=10     # k-nearest neighbors
+k=5
+#k=10     # k-nearest neighbors
 t = 10.0 # kernel parameter in similarity measure
 
 L = 100   # Monte-Carlo sampling
@@ -129,7 +130,10 @@ sigma_r,sigma_h = init.matriksidentitasukuran(C)
 tau_mu,eta_mu,gamma_mu=init.alphabagibeta(tau_alpha,tau_beta,eta_alpha,eta_beta,gamma_alpha,gamma_beta)
 Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
-S=np.mat(calculate.S(k, t, Y_train, Y_test))
+#S=np.mat(calculate.S(k, t, Y_train, Y_test))
+
+from lib import siamese
+S=np.mat(siamese.S(k, t, Y_train, Y_test))
 
 # In[]: Loop training
 
