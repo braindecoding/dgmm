@@ -52,8 +52,33 @@ def create_pairs_with_mse(Y_train, Y_test, threshold):
 def create_pairs(Y_train, Y_test):
     return create_pairs_with_mse(Y_train, Y_test, 0.75)
 
+from tensorflow.keras.layers import Conv1D, MaxPooling1D
+
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Reshape
 
 def initialize_base_network(input_shape):
+    """
+    Initialize the base network for the Siamese Network.
+
+    Parameters:
+    input_shape (tuple): Shape of the input data (length, channels).
+
+    Returns:
+    Model: A Keras model representing the base network.
+    """
+    input = Input(shape=input_shape)
+    # Add a channel dimension to the input
+    x = Reshape((input_shape[0], 1))(input)
+    x = Conv1D(64, 3, activation='relu')(x)
+    x = MaxPooling1D(2)(x)
+    x = Conv1D(128, 3, activation='relu')(x)
+    x = MaxPooling1D(2)(x)
+    x = Flatten()(x)
+    x = Dense(128, activation='relu')(x)
+    return Model(input, x)
+
+
+def initialize_base_networkold(input_shape):
     """
     Initialize the base network for the Siamese Network.
 
@@ -89,6 +114,48 @@ def euclidean_distance(vects):
     return K.sqrt(K.maximum(sum_square, K.epsilon()))
 
 def S(k, t, Y_train, Y_test):
+    # Create pairs of samples
+    pairs, labels = create_pairs(Y_train, Y_test)
+
+    # Assuming Y_train and Y_test are one-dimensional arrays with length 3092
+    Y_train = Y_train.reshape((Y_train.shape[0], Y_train.shape[1], 1))
+    Y_test = Y_test.reshape((Y_test.shape[0], Y_test.shape[1], 1))
+
+    # Define the Siamese Network
+    input_shape = Y_train.shape[1:]  # Exclude batch size
+    base_network = initialize_base_network(input_shape)
+
+    # Reshape pairs for Conv1D input
+    pairs = [pair.reshape((pair.shape[0], pair.shape[1], 1)) for pair in pairs[:, :2]]
+
+    input_a = Input(shape=input_shape)
+    input_b = Input(shape=input_shape)
+
+    processed_a = base_network(input_a)
+    processed_b = base_network(input_b)
+
+    distance = Lambda(euclidean_distance)([processed_a, processed_b])
+    model = Model([input_a, input_b], distance)
+
+    # Train the model
+    model.compile(loss='binary_crossentropy', optimizer='adam')
+    model.fit([np.array(pairs)[:, 0], np.array(pairs)[:, 1]], labels, epochs=int(t), batch_size=int(k))
+
+    # Use the model to compute similarity/distance scores
+    n_test = Y_test.shape[0]
+    n_train = Y_train.shape[0]
+
+    distances = np.zeros((n_train, n_test))
+    for i in range(n_test):
+        for j in range(n_train):
+            distances[j, i] = model.predict([np.expand_dims(Y_test[i], axis=0), np.expand_dims(Y_train[j], axis=0)])
+
+    return distances
+
+
+
+
+def Sold(k, t, Y_train, Y_test):
     # Membuat pasangan sampel
     pairs, labels = create_pairs(Y_train, Y_test)
 

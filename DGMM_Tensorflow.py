@@ -20,7 +20,7 @@ from tensorflow.keras import metrics
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
-from lib import prepro,ars,obj,init,calculate,train
+from lib import prepro,ars,obj,init,train
 
 # In[]: Load dataset X stimulus Y fMRI
 resolution = 28
