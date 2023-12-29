@@ -1,10 +1,10 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 11 15:50:17 2017
-https://github.com/ChangdeDu/DGMM
+Inspired from
 @author: duchangde 
-Modified by @awangga
+and Miyawaki on Kamitami Labs
+Modified and development by @awangga
 """
 
 import os    
@@ -34,8 +34,9 @@ D1 = X_train.shape[1]*X_train.shape[2]*X_train.shape[3]
 D2 = Y_train.shape[1]
 K = 6 # dimensi latent space
 C = 5
-#intermediate_dim = 128
-intermediate_dim = 512
+#intermediate_dim = 128 # origin
+intermediate_dim = 512 # origin
+
 #hyper-parameters
 tau_alpha = 1
 tau_beta = 1
@@ -47,8 +48,8 @@ gamma_beta = 1
 Beta = 1 # Beta-VAE for Learning Disentangled Representations
 rho=0.1  # posterior regularization parameter
 
-k=5
-#k=10     # k-nearest neighbors
+
+k=10     # k-nearest neighbors origin
 t = 10.0 # kernel parameter in similarity measure
 
 L = 100   # Monte-Carlo sampling
