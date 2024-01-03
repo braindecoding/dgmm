@@ -413,8 +413,8 @@ for j in range(1):
     plt.show()
 
 # In[]: Hitung MSE
-#stim=X_test[:,:,:,0].reshape(20,100)
-stim = X_test[:, :, :, 0].reshape(20, 120)
+stim=X_test[:,:,:,0].reshape(20,100)
+#stim = X_test[:, :, :, 0].reshape(20, 120)
 
 rec=X_reconstructed_mu[:,0,:,:].reshape(20,100)
 
