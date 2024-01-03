@@ -24,10 +24,11 @@ from lib import prepro,ars,obj,init,train
 
 # In[]: Load dataset X stimulus Y fMRI
 resolution = 28
-X_train,X_test,Y_train,Y_test=prepro.getXY('digit69_28x28.mat',resolution)
+#X_train,X_test,Y_train,Y_test=prepro.getXY('digit69_28x28.mat',resolution)
+X_train, X_test, X_validation, Y_train, Y_test, Y_validation=prepro.getXYVal('digit69_28x28.mat',resolution)
 
 # In[]: Set the model parameters and hyper-parameters
-maxiter = 200
+maxiter = 2000
 nb_epoch = 1
 batch_size = 10
 D1 = X_train.shape[1]*X_train.shape[2]*X_train.shape[3]
@@ -35,7 +36,7 @@ D2 = Y_train.shape[1]
 K = 6 # dimensi latent space
 C = 5
 #intermediate_dim = 128 # origin
-intermediate_dim = 512 # origin
+intermediate_dim = 256 # origin
 
 #hyper-parameters
 tau_alpha = 1
@@ -133,9 +134,9 @@ Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
 #S=np.mat(calculate.S(k, t, Y_train, Y_test))
 
-from lib import siamese
-S=np.mat(siamese.S(k, t, Y_train, Y_test))
-
+from lib import siamese,calculate
+S=np.mat(siamese.S(k, t, Y_train, Y_validation))
+#S=np.mat(calculate.S(k, t, Y_train, Y_validation))
 # In[]: Loop training
 
 for l in range(maxiter):
