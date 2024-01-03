@@ -25,10 +25,10 @@ from lib import prepro,ars,obj,init,train
 # In[]: Load dataset X stimulus Y fMRI
 resolution = 28
 #X_train,X_test,Y_train,Y_test=prepro.getXY('digit69_28x28.mat',resolution)
-X_train, X_test, X_validation, Y_train, Y_test, Y_validation=prepro.getXYVal('digit69_28x28.mat',resolution)
+X_train, X_test, X_validation, Y_train, Y_test, Y_validation=prepro.getXYVal('./data/digit69_28x28.mat',resolution)
 
 # In[]: Set the model parameters and hyper-parameters
-maxiter = 2000
+maxiter = 200
 nb_epoch = 1
 batch_size = 10
 D1 = X_train.shape[1]*X_train.shape[2]*X_train.shape[3]

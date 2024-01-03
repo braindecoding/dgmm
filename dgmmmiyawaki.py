@@ -16,7 +16,7 @@ import os
 os.environ['THEANO_FLAGS'] = "device=gpu"  
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import savemat
+#from scipy.io import savemat
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape
@@ -25,8 +25,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import backend
 from numpy import random
 from tensorflow.keras import optimizers
-import matlab.engine
-eng=matlab.engine.start_matlab()
+#import matlab.engine
+#eng=matlab.engine.start_matlab()
 from tensorflow.keras import metrics
 
 from tensorflow.python.framework.ops import disable_eager_execution
@@ -37,7 +37,7 @@ from lib.bdtb import simpanMSE, simpanMSEMiyawaki, plotDGMM,ubahkelistofchunks,s
 
 
 matlist=[]
-matlist.append('../de_s1_V1_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
+matlist.append('./de_s1_V1_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
 #matlist.append('../de_s1_V2_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
 #matlist.append('../de_s1_V1V2_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
 #matlist.append('../de_s1_V3VP_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
@@ -56,8 +56,9 @@ y=testdt.astype('float32')
 z=predm.astype('float32')
 
 X_train, X_test, Y_train, Y_test, Miyawaki_1, Miyawaki_2 = train_test_split( x, y, z,test_size=20, random_state=7)
-
-
+#tambah data validasi karena indikasi kecurangan
+#X_train, X_test, Y_train, Y_test = train_test_split(x, y, test_size=0.2, random_state=7)
+X_train, X_validation, Y_train, Y_validation = train_test_split(X_train, Y_train, test_size=0.2, random_state=7)
 # Pembagian Dataset tanpa random
 # fmri=testdt.astype('float32')
 # pict=testlb.astype('float32')
@@ -141,8 +142,8 @@ L = 100   # Monte-Carlo sampling
 
 np.random.seed(1000)
 numTrn=X_train.shape[0]
-numTest=X_test.shape[0]
-
+#numTest=X_test.shape[0]
+numTest=X_validation.shape[0]
 # input image dimensions
 img_rows, img_cols, img_chns = resolution, resolution, 1
 
@@ -313,8 +314,13 @@ gamma_mu = gamma_alpha / gamma_beta
 Y_mu = np.array(Z_mu * B_mu + R_mu * H_mu).astype(np.float32)#dapat dari nilai random
 Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
-savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
-S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
+
+from lib import siamese,calculate
+#S=np.mat(siamese.S(k, t, Y_train, Y_validation))
+S=np.mat(calculate.S(k, t, Y_train, Y_validation))
+
+#savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
+#S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
 # In[]: Y fMRI input, Y_mu didapat dari nilai random, Y_lsgms nilai log
 print (X_train.shape)
 print (Y_train.shape)
@@ -407,7 +413,9 @@ for j in range(1):
     plt.show()
 
 # In[]: Hitung MSE
-stim=X_test[:,:,:,0].reshape(20,100)
+#stim=X_test[:,:,:,0].reshape(20,100)
+stim = X_test[:, :, :, 0].reshape(20, 120)
+
 rec=X_reconstructed_mu[:,0,:,:].reshape(20,100)
 
 scoreresults=simpanScore(stim, rec, matfile, 'DGMM')
