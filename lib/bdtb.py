@@ -418,7 +418,7 @@ def ubahkelistofchunks(mse,msem,pred,predm,label,n):
 
 def ssimscore(matrixgambar1,matrixgambar2):
     # SSIM: 1.0 is similar
-    (score, diff) = structural_similarity(matrixgambar1, matrixgambar2, full=True)
+    (score, diff) = structural_similarity(matrixgambar1, matrixgambar2, full=True, data_range=255)
     diff = (diff * 255).astype("uint8")
     # 6. You can print only the score if you want
     print("SSIM: {}".format(score))
