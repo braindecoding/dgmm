@@ -412,26 +412,39 @@ for j in range(1):
         ax.get_yaxis().set_visible(False)
     plt.show()
 
-# In[]: Hitung MSE
-stim=X_test[:,:,:,0].reshape(20,100)
-#stim = X_test[:, :, :, 0].reshape(20, 120)
 
-rec=X_reconstructed_mu[:,0,:,:].reshape(20,100)
+# In[]: Hitung FID dan IS dan MSE
+# Existing code
+stim = X_test[:, :, :, 0].reshape(20, 100)
+rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 
-scoreresults=simpanScore(stim, rec, matfile, 'DGMM')
-scoreresults_miyawaki=simpanScore(stim, Miyawaki_2, matfile, 'Miyawaki')
+from lib.fidis import calculate_fid
 
-mse=simpanMSE(stim,rec,matfile,'dgmm')
-msem=simpanMSE(stim,Miyawaki_2,matfile,'miyawaki')
+# Calculate FID - Frechet Inception Distance (FID)
+fid_value = calculate_fid(stim,rec)
+print('FID:', fid_value)
 
-chunk=10
-lmse,lmsem,lpred,lpredm,llabel=ubahkelistofchunks(mse,msem,rec,Miyawaki_2,stim,chunk)
+# Calculate IS
+#is_mean, is_std = calculate_is(generated_images)
+#print('Inception Score - Mean:', is_mean)
+#print('Inception Score - Std:', is_std)
 
-n=1
-for label,pred,predm,mse,msem in zip(llabel,lpred,lpredm,lmse,lmsem):
-    plotDGMM(label, pred, predm, mse,msem,matfile,n,'DGMM')
-    n=n+1
+# Continue with the rest of your existing code
+scoreresults = simpanScore(stim, rec, matfile, 'VAE')
+scoreresults_miyawaki = simpanScore(stim, Miyawaki_2, matfile, 'Miyawaki')
+
+mse = simpanMSE(stim, rec, matfile, 'VAE')
+msem = simpanMSE(stim, Miyawaki_2, matfile, 'miyawaki')
+
+chunk = 10
+lmse, lmsem, lpred, lpredm, llabel = ubahkelistofchunks(mse, msem, rec, Miyawaki_2, stim, chunk)
+
+n = 1
+for label, pred, predm, mse, msem in zip(llabel, lpred, lpredm, lmse, lmsem):
+    plotDGMM(label, pred, predm, mse, msem, matfile, n, 'VAE')
+    n = n + 1
+
 
 # In[]:
-np.savetxt('skordgmm.csv',scoreresults,delimiter=',')
+np.savetxt('skorvae.csv',scoreresults,delimiter=',')
 np.savetxt('skormiyawaki.csv',scoreresults_miyawaki,delimiter=',')

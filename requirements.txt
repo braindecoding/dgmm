@@ -3,3 +3,4 @@ matplotlib
 scipy
 scikit-learn
 tensorflow
+tensorflow_addons
