@@ -28,3 +28,9 @@ Python 3.10
 tensorflow-2.10.0	
 
 https://sqmao.medium.com/using-wsl2-to-set-up-a-spyder-ide-on-windows-10-3734139b554
+
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+cuDNN v8.9.7 (December 5th, 2023), for CUDA 12.x
+
+cuda_12.2.0_536.25_windows
