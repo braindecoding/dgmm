@@ -31,7 +31,7 @@ from tensorflow.keras import metrics
 
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
-from dgmm import loadtrainandlabel,loadtestandlabel
+from lib.dgmm import loadtrainandlabel,loadtestandlabel
 from lib.bdtb import simpanMSE, simpanMSEMiyawaki, plotDGMM,ubahkelistofchunks,simpanScore
 
 
@@ -98,21 +98,28 @@ resolution = 10#sebelumnya 28
 #X_test = X_test.reshape([X_test.shape[0], 1, resolution, resolution])
 #channel di belakang(edit rolly)
 X_train = X_train.reshape([X_train.shape[0], resolution, resolution, 1])
+X_validation = X_validation.reshape([X_validation.shape[0], resolution, resolution, 1])
 X_test = X_test.reshape([X_test.shape[0], resolution, resolution, 1])
 # In[]: Normlization sinyal fMRI
 min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1))   
 Y_train = min_max_scaler.fit_transform(Y_train)     
+Y_validation = min_max_scaler.transform(Y_validation)
 Y_test = min_max_scaler.transform(Y_test)
 
 print ('X_train.shape : ')
 print (X_train.shape)
 print ('Y_train.shape')
 print (Y_train.shape)
+print ('X_validation.shape')
+print (X_validation.shape)
+print ('Y_validation.shape')
+print (Y_validation.shape)
 print ('X_test.shape')
 print (X_test.shape)
 print ('Y_test.shape')
 print (Y_test.shape)
 numTrn=X_train.shape[0]
+numVal=X_validation.shape[0]
 numTest=X_test.shape[0]
 
 # In[]: Set the model parameters and hyper-parameters
@@ -142,8 +149,8 @@ L = 100   # Monte-Carlo sampling
 
 np.random.seed(1000)
 numTrn=X_train.shape[0]
-#numTest=X_test.shape[0]
-numTest=X_validation.shape[0]
+numVal=X_validation.shape[0]
+numTest=X_test.shape[0]
 # input image dimensions
 img_rows, img_cols, img_chns = resolution, resolution, 1
 
@@ -276,7 +283,12 @@ def obj(X, X_mu):#loss function antara stimulus X dengan citra rekonstruksi X_mu
     return  cost 
 #bangun model DGMM basis autoencoder dengan inputan extra fMRI
 DGMM = Model(inputs=[X, Y, Y_mu, Y_lsgms], outputs=X_mu)
-opt_method = optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+
+try:
+    opt_method = optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+except:
+    opt_method = optimizers.legacy.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+
 DGMM.compile(optimizer = opt_method, loss = obj)
 print("objective function definisikan")
 DGMM.summary()
@@ -376,10 +388,10 @@ for l in range(maxiter):
     Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2)))   
 
 # In[]: reconstruct X (image) from Y (fmri)
-X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))
+X_reconstructed_mu = np.zeros((numVal, img_chns, img_rows, img_cols))
 HHT = H_mu * H_mu.T + D2 * sigma_h
 Temp = gamma_mu * np.mat(np.eye(D2)) - (gamma_mu**2) * (H_mu.T * (np.mat(np.eye(C)) + gamma_mu * HHT).I * H_mu)
-for i in range(numTest):
+for i in range(numVal):
     s=S[:,i]
     z_sigma_test = (B_mu * Temp * B_mu.T + (1 + rho * s.sum(axis=0)[0,0]) * np.mat(np.eye(K)) ).I
     z_mu_test = (z_sigma_test * (B_mu * Temp * (np.mat(Y_test)[i,:]).T + rho * np.mat(Z_mu).T * s )).T
@@ -426,6 +438,15 @@ for i in range(len(stim)):
 # Save rec array as images
 for i in range(len(rec)):
     save_array_as_image(rec[i].reshape(10, 10), f'rec/image_{i}.png')
+
+# Save rec miyawaki array as images
+for i in range(len(rec)):
+    save_array_as_image(Miyawaki_2[i].reshape(10, 10), f'recm/image_{i}.png')
+    
+from lib.fid import calculate_fid
+if __name__ == '__main__':
+    fid_value = calculate_fid("stim","rec")
+    print('FID:', fid_value)
 
 # Calculate FID - Frechet Inception Distance (FID)
 #fid_value = calculate_fid("stim","rec")
