@@ -433,26 +433,26 @@ rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 from lib.fidis import save_array_as_image
 # Save stim array as images
 for i in range(len(stim)):
-    save_array_as_image(stim[i].reshape(10, 10), f'stim/image_{i}.png')
+    save_array_as_image(np.rot90(np.fliplr(stim[i].reshape(10, 10))), f'stim/image_{i}.png')
 
 # Save rec array as images
 for i in range(len(rec)):
-    save_array_as_image(rec[i].reshape(10, 10), f'rec/image_{i}.png')
+    save_array_as_image(np.rot90(np.fliplr(rec[i].reshape(10, 10))), f'rec/image_{i}.png')
 
 # Save rec miyawaki array as images
 for i in range(len(rec)):
-    save_array_as_image(Miyawaki_2[i].reshape(10, 10), f'recm/image_{i}.png')
+    save_array_as_image(np.rot90(np.fliplr(Miyawaki_2[i].reshape(10, 10))), f'recm/image_{i}.png')
     
-from lib.fid import calculate_fid
+from lib.fid import calculate_fid,calculate_inception_score
 if __name__ == '__main__':
+    # Calculate FID - Frechet Inception Distance (FID)
     fid_value = calculate_fid("stim","rec")
     print('FID:', fid_value)
 
-# Calculate FID - Frechet Inception Distance (FID)
-#fid_value = calculate_fid("stim","rec")
-#print('FID:', fid_value)
-
 # Calculate IS
+is_score, is_std = calculate_inception_score(rec, batch_size=32, resize=True, splits=10)
+print('Inception Score:', is_score, '±', is_std)
+
 #is_mean, is_std = calculate_is(generated_images)
 #print('Inception Score - Mean:', is_mean)
 #print('Inception Score - Std:', is_std)

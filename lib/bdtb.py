@@ -6,14 +6,12 @@ Created on Fri Jan  8 17:15:32 2021
 """
 from tensorflow.keras.models import Sequential,load_model
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.losses import MeanSquaredError
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import device
 from tensorflow.python.client.device_lib import list_local_devices
 import scipy.io
 from skimage.metrics import structural_similarity
-import cv2
 import math
 
 def getdatatrainfrommat(matfile):
