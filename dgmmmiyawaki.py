@@ -418,14 +418,14 @@ for j in range(1):
 stim = X_test[:, :, :, 0].reshape(20, 100)
 rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 
-#from lib.fidis import calculate_fid,save_array_as_image
+from lib.fidis import save_array_as_image
 # Save stim array as images
-#for i in range(len(stim)):
-#    save_array_as_image(stim[i].reshape(10, 10), f'stim/image_{i}.png')
+for i in range(len(stim)):
+    save_array_as_image(stim[i].reshape(10, 10), f'stim/image_{i}.png')
 
 # Save rec array as images
-#for i in range(len(rec)):
-#    save_array_as_image(rec[i].reshape(10, 10), f'rec/image_{i}.png')
+for i in range(len(rec)):
+    save_array_as_image(rec[i].reshape(10, 10), f'rec/image_{i}.png')
 
 # Calculate FID - Frechet Inception Distance (FID)
 #fid_value = calculate_fid("stim","rec")

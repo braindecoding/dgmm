@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from pytorch_fid import fid_score
+#from pytorch_fid import fid_score
 
 
 def save_array_as_image(array, filename):
@@ -8,6 +8,6 @@ def save_array_as_image(array, filename):
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
     
-def calculate_fid(real_images, generated_images):
-    fid = fid_score.calculate_fid_given_paths([real_images, generated_images], batch_size=50, device='cuda', dims=2048)
-    return fid
+# def calculate_fid(real_images, generated_images):
+#     fid = fid_score.calculate_fid_given_paths([real_images, generated_images], batch_size=50, device='cuda', dims=2048)
+#     return fid
