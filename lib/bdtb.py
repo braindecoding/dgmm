@@ -258,7 +258,7 @@ def plotting(label,pred,predm,fname):
                interpolation='nearest')
     plt.show()
 
-def plotHasil(label,pred,predm,mse,msem,matfile,n,arch):
+def plotHasil(label,pred,predm,mse,msem,matfile,experimentname,n,arch):
     fname1=getfigpath(matfile,'resultpict'+'\\'+arch,n)
     createfolder(getsubfolderfrompath(fname1))
     rows=['Stimulus','Rolly','Miyawaki']
@@ -289,7 +289,7 @@ def plotHasil(label,pred,predm,mse,msem,matfile,n,arch):
     # plt.show()
     plt.savefig(fname1)
     
-    fname2=getfigpath(matfile,'resultmse'+'\\'+arch,n)
+    fname2=getfigpath(matfile,'resultmse'+'\\'+arch,experimentname,n)
     createfolder(getsubfolderfrompath(fname2))
     fige, axe = plt.subplots(figsize=(15, 5))
     axe.plot(idx, mse, color = 'green', label = 'mse rolly')
@@ -314,8 +314,8 @@ def plotHasil(label,pred,predm,mse,msem,matfile,n,arch):
     imgs_comb = PIL.Image.fromarray( imgs_comb)
     imgs_comb.save(fnamegab)
 
-def plotDGMM(label,pred,predm,mse,msem,matfile,n,arch):
-    fname1=getfigpath(matfile,'resultpict'+'\\'+arch,n)
+def plotDGMM(label,pred,predm,mse,msem,matfile,n,arch,experimentname):
+    fname1=getfigpath(matfile,'resultpict'+'\\'+arch,experimentname,n)
     createfolder(getsubfolderfrompath(fname1))
     rows=['Stimulus','VAE','SLR']
     idx=list(range(1,len(mse)+1))
@@ -345,7 +345,7 @@ def plotDGMM(label,pred,predm,mse,msem,matfile,n,arch):
     # plt.show()
     plt.savefig(fname1)
     
-    fname2=getfigpath(matfile,'resultmse'+'\\'+arch,n)
+    fname2=getfigpath(matfile,'resultmse'+'\\'+arch,experimentname,n)
     createfolder(getsubfolderfrompath(fname2))
     fige, axe = plt.subplots(figsize=(15, 5))
     axe.plot(idx, mse, color = 'green', label = 'mse vae')
@@ -357,7 +357,7 @@ def plotDGMM(label,pred,predm,mse,msem,matfile,n,arch):
     plt.savefig(fname2)
     
     import PIL
-    fnamegab=getfigpath(matfile,'results'+'\\'+arch,n)
+    fnamegab=getfigpath(matfile,'results'+'\\'+arch,experimentname,n)
     createfolder(getsubfolderfrompath(fnamegab))
     
     list_im = [fname1, fname2]
@@ -386,10 +386,10 @@ def figrecfile(matfile,n):
     figfolderpath='.\\'+matfile.split('_')[2]+'_'+matfile.split('_')[-2]+'_figrec'+'\\'+str(n)+'.png'
     return figfolderpath
 
-def getfigpath(matfile,suffix,n):
+def getfigpath(matfile,suffix,experimentname,n):
     import pathlib
     scriptDirectory = pathlib.Path().absolute()
-    figfolderpath=str(scriptDirectory)+'\\'+matfile.split('_')[2]+'_'+matfile.split('_')[-2]+'_'+suffix+'\\'+str(n)+'.png'
+    figfolderpath=str(scriptDirectory)+'\\'+matfile.split('_')[2]+'_'+matfile.split('_')[-2]+'_'+suffix+'\\'+experimentname+"_"+str(n)+'.png'
     print('generate path gambar : '+figfolderpath)
     return figfolderpath
 

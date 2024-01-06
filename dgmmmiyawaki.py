@@ -133,6 +133,26 @@ K = 6 #panjang fitur untuk Z (latent space)
 C = 5 # membentuk diagonal array nilai 1 ditengahnya ukuran CxC(mungkin matrix identitas)
 intermediate_dim = 128
 
+
+import sys
+ 
+# total arguments
+n = len(sys.argv)
+print("Total arguments passed:", n)
+ 
+# Arguments passed K+intermediate_dim + K + maxiter + batch_size
+print("\nName of Python script:", sys.argv[0])
+ 
+print("\nArguments passed:", end = " ")
+for i in range(1, n):
+    print(sys.argv[i], end = " ")
+
+K=int(sys.argv[1])
+intermediate_dim=int(sys.argv[2])
+batch_size=int(sys.argv[3])
+maxiter=int(sys.argv[4])
+experimentname=str(K)+"_"+str(intermediate_dim)+"_" + str(batch_size)+"_" + str(maxiter)
+
 #hyper-parameters
 tau_alpha = 1
 tau_beta = 1
@@ -408,29 +428,31 @@ for i in range(numTest):
     X_reconstructed_mu[i,:,:,:] = x_reconstructed_mu
 
 # In[]:# visualization the reconstructed images
-n = 20
-for j in range(1):
-    plt.figure(figsize=(12, 2))    
-    for i in range(n):
-        # display original images
-        ax = plt.subplot(2, n, i +j*n*2 + 1)
-        plt.imshow(np.rot90(np.fliplr(X_test[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        # display reconstructed images
-        ax = plt.subplot(2, n, i + n + j*n*2 + 1)
-        plt.imshow(np.rot90(np.fliplr(X_reconstructed_mu[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-    plt.show()
-
+# =============================================================================
+# n = 20
+# for j in range(1):
+#     plt.figure(figsize=(12, 2))    
+#     for i in range(n):
+#         # display original images
+#         ax = plt.subplot(2, n, i +j*n*2 + 1)
+#         plt.imshow(np.rot90(np.fliplr(X_test[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
+#         ax.get_xaxis().set_visible(False)
+#         ax.get_yaxis().set_visible(False)
+#         # display reconstructed images
+#         ax = plt.subplot(2, n, i + n + j*n*2 + 1)
+#         plt.imshow(np.rot90(np.fliplr(X_reconstructed_mu[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
+#         ax.get_xaxis().set_visible(False)
+#         ax.get_yaxis().set_visible(False)
+#     plt.show()
+# 
+# =============================================================================
 
 # In[]: Hitung FID dan IS dan MSE
 # Existing code
 stim = X_test[:, :, :, 0].reshape(20, 100)
 rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 
-from lib.fid import calculate_fid,calculate_inception_score
+
 # Calculate IS
 #is_score, is_std = calculate_inception_score(rec, batch_size=2, resize=True, splits=10)
 #print('Inception Score:', is_score, '±', is_std)
@@ -448,11 +470,16 @@ for i in range(len(rec)):
 for i in range(len(rec)):
     save_array_as_image(np.rot90(np.fliplr(Miyawaki_2[i].reshape(10, 10))), f'recm/image_{i}.png')
     
-
-if __name__ == '__main__':
-    # Calculate FID - Frechet Inception Distance (FID)
-    fid_value = calculate_fid("stim","rec")
-    print('FID:', fid_value)
+# =============================================================================
+# from lib.fid import calculate_fid
+# if __name__ == '__main__':
+#     # Calculate FID - Frechet Inception Distance (FID)
+#     fid_value = calculate_fid("stim","rec")
+#     print('FID:', fid_value)
+#     f = open(experimentname+"_"+str(fid_value)+".txt", "a")
+#     f.write(str(fid_value))
+#     f.close()
+# =============================================================================
 
 # Calculate IS
 #is_score, is_std = calculate_inception_score(rec, batch_size=32, resize=True, splits=10)
@@ -474,7 +501,7 @@ lmse, lmsem, lpred, lpredm, llabel = ubahkelistofchunks(mse, msem, rec, Miyawaki
 
 n = 1
 for label, pred, predm, mse, msem in zip(llabel, lpred, lpredm, lmse, lmsem):
-    plotDGMM(label, pred, predm, mse, msem, matfile, n, 'VAE')
+    plotDGMM(label, pred, predm, mse, msem, matfile, n, 'VAE',experimentname)
     n = n + 1
 
 
