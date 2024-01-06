@@ -49,3 +49,9 @@ def calculate_inception_score(images, batch_size=32, resize=True, splits=10):
         scores.append(np.exp(kl))
 
     return np.mean(scores), np.std(scores)
+
+# Calculate IS
+# =============================================================================
+# is_score, is_std = calculate_inception_score(rec, batch_size=32, resize=True, splits=10)
+# print('Inception Score:', is_score, '±', is_std)
+# =============================================================================

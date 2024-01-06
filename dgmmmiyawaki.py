@@ -388,10 +388,10 @@ for l in range(maxiter):
     Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2)))   
 
 # In[]: reconstruct X (image) from Y (fmri)
-X_reconstructed_mu = np.zeros((numVal, img_chns, img_rows, img_cols))
+X_reconstructed_mu = np.zeros((numTest, img_chns, img_rows, img_cols))
 HHT = H_mu * H_mu.T + D2 * sigma_h
 Temp = gamma_mu * np.mat(np.eye(D2)) - (gamma_mu**2) * (H_mu.T * (np.mat(np.eye(C)) + gamma_mu * HHT).I * H_mu)
-for i in range(numVal):
+for i in range(numTest):
     s=S[:,i]
     z_sigma_test = (B_mu * Temp * B_mu.T + (1 + rho * s.sum(axis=0)[0,0]) * np.mat(np.eye(K)) ).I
     z_mu_test = (z_sigma_test * (B_mu * Temp * (np.mat(Y_test)[i,:]).T + rho * np.mat(Z_mu).T * s )).T
@@ -430,6 +430,11 @@ for j in range(1):
 stim = X_test[:, :, :, 0].reshape(20, 100)
 rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 
+from lib.fid import calculate_fid,calculate_inception_score
+# Calculate IS
+#is_score, is_std = calculate_inception_score(rec, batch_size=2, resize=True, splits=10)
+#print('Inception Score:', is_score, '±', is_std)
+
 from lib.fidis import save_array_as_image
 # Save stim array as images
 for i in range(len(stim)):
@@ -443,15 +448,15 @@ for i in range(len(rec)):
 for i in range(len(rec)):
     save_array_as_image(np.rot90(np.fliplr(Miyawaki_2[i].reshape(10, 10))), f'recm/image_{i}.png')
     
-from lib.fid import calculate_fid,calculate_inception_score
+
 if __name__ == '__main__':
     # Calculate FID - Frechet Inception Distance (FID)
     fid_value = calculate_fid("stim","rec")
     print('FID:', fid_value)
 
 # Calculate IS
-is_score, is_std = calculate_inception_score(rec, batch_size=32, resize=True, splits=10)
-print('Inception Score:', is_score, '±', is_std)
+#is_score, is_std = calculate_inception_score(rec, batch_size=32, resize=True, splits=10)
+#print('Inception Score:', is_score, '±', is_std)
 
 #is_mean, is_std = calculate_is(generated_images)
 #print('Inception Score - Mean:', is_mean)
