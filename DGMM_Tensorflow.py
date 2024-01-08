@@ -192,18 +192,43 @@ for i in range(numTest):
 
 
 # In[]:# visualization the reconstructed images, output in var X_reconstructed_mu
-n = 10
-for j in range(1):
-    plt.figure(figsize=(12, 2))    
-    for i in range(n):
-        # display original images
-        ax = plt.subplot(2, n, i +j*n*2 + 1)
-        plt.imshow(np.rot90(np.fliplr(X_test[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        # display reconstructed images
-        ax = plt.subplot(2, n, i + n + j*n*2 + 1)
-        plt.imshow(np.rot90(np.fliplr(X_reconstructed_mu[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-    plt.show()
+# =============================================================================
+# n = 10
+# for j in range(1):
+#     plt.figure(figsize=(12, 2))    
+#     for i in range(n):
+#         # display original images
+#         ax = plt.subplot(2, n, i +j*n*2 + 1)
+#         plt.imshow(np.rot90(np.fliplr(X_test[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
+#         ax.get_xaxis().set_visible(False)
+#         ax.get_yaxis().set_visible(False)
+#         # display reconstructed images
+#         ax = plt.subplot(2, n, i + n + j*n*2 + 1)
+#         plt.imshow(np.rot90(np.fliplr(X_reconstructed_mu[i+j*n].reshape(resolution ,resolution ))),cmap='hot')
+#         ax.get_xaxis().set_visible(False)
+#         ax.get_yaxis().set_visible(False)
+#     plt.show()
+# =============================================================================
+
+# In[]: simpan ke dalam folder
+# Existing code
+stim = X_test[:, :, :, 0].reshape(20, 100)
+rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
+
+
+# Calculate IS
+#is_score, is_std = calculate_inception_score(rec, batch_size=2, resize=True, splits=10)
+#print('Inception Score:', is_score, '±', is_std)
+
+from lib.fidis import save_array_as_image
+# Save stim array as images
+for i in range(len(stim)):
+    save_array_as_image(np.rot90(np.fliplr(stim[i].reshape(10, 10))), f'stim/image_{i}.png')
+
+# Save rec array as images
+for i in range(len(rec)):
+    save_array_as_image(np.rot90(np.fliplr(rec[i].reshape(10, 10))), f'rec/image_{i}.png')
+
+# Save rec miyawaki array as images
+for i in range(len(rec)):
+    save_array_as_image(np.rot90(np.fliplr(Miyawaki_2[i].reshape(10, 10))), f'recm/image_{i}.png')

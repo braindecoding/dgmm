@@ -37,7 +37,7 @@ from lib.bdtb import simpanMSE, simpanMSEMiyawaki, plotDGMM,ubahkelistofchunks,s
 
 
 matlist=[]
-matlist.append('./de_s1_V1_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
+matlist.append('./data/de_s1_V1_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
 #matlist.append('../de_s1_V2_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
 #matlist.append('../de_s1_V1V2_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
 #matlist.append('../de_s1_V3VP_Ecc1to11_baseByRestPre_smlr_s1071119ROI_resol10_leave0_1x1_preprocessed.mat')
@@ -348,8 +348,8 @@ Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
 
 from lib import siamese,calculate
-#S=np.mat(siamese.S(k, t, Y_train, Y_validation))
-S=np.mat(calculate.S(k, t, Y_train, Y_validation))
+S=np.mat(siamese.S(k, t, Y_train, Y_validation))
+#S=np.mat(calculate.S(k, t, Y_train, Y_validation))
 
 #savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
 #S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
