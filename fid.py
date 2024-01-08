@@ -9,7 +9,7 @@ from pytorch_fid import fid_score
 import sys
 
 def calculate_fid(real_images, generated_images, batch_size=20):
-    fid = fid_score.calculate_fid_given_paths([real_images, generated_images], batch_size=min(batch_size, len(real_images)), device='cpu', dims=2048)
+    fid = fid_score.calculate_fid_given_paths([real_images, generated_images], batch_size=min(batch_size, len(real_images)), device='cuda', dims=2048)
     return fid
 
 
