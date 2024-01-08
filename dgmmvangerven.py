@@ -38,6 +38,26 @@ C = 5
 #intermediate_dim = 128 # origin
 intermediate_dim = 256 # origin
 
+import sys
+ 
+# total arguments
+n = len(sys.argv)
+print("Total arguments passed:", n)
+ 
+# Arguments passed K+intermediate_dim + K + maxiter + batch_size
+print("\nName of Python script:", sys.argv[0])
+ 
+print("\nArguments passed:", end = " ")
+for i in range(1, n):
+    print(sys.argv[i], end = " ")
+
+K=int(sys.argv[1])
+intermediate_dim=int(sys.argv[2])
+batch_size=int(sys.argv[3])
+maxiter=int(sys.argv[4])
+experimentname=str(K)+"_"+str(intermediate_dim)+"_" + str(batch_size)+"_" + str(maxiter)
+
+
 #hyper-parameters
 tau_alpha = 1
 tau_beta = 1
@@ -212,8 +232,8 @@ for i in range(numTest):
 
 # In[]: simpan ke dalam folder
 # Existing code
-stim = X_test[:, :, :, 0].reshape(20, 100)
-rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
+stim = X_test[:, :, :, 0].reshape(10, 784)
+rec = X_reconstructed_mu[:, 0, :, :].reshape(10, 784)
 
 
 # Calculate IS
@@ -223,12 +243,8 @@ rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 from lib.fidis import save_array_as_image
 # Save stim array as images
 for i in range(len(stim)):
-    save_array_as_image(np.rot90(np.fliplr(stim[i].reshape(10, 10))), f'stim/image_{i}.png')
+    save_array_as_image(np.rot90(np.fliplr(stim[i].reshape(28, 28))), f'stim/image_{i}.png')
 
 # Save rec array as images
 for i in range(len(rec)):
-    save_array_as_image(np.rot90(np.fliplr(rec[i].reshape(10, 10))), f'rec/image_{i}.png')
-
-# Save rec miyawaki array as images
-for i in range(len(rec)):
-    save_array_as_image(np.rot90(np.fliplr(Miyawaki_2[i].reshape(10, 10))), f'recm/image_{i}.png')
+    save_array_as_image(np.rot90(np.fliplr(rec[i].reshape(28, 28))), f'rec/image_{i}.png')
