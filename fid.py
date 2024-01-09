@@ -4,12 +4,16 @@ Created on Fri Jan  5 14:47:17 2024
 
 @author: DTI
 """
-
+import torch
 from pytorch_fid import fid_score
 import sys
 
 def calculate_fid(real_images, generated_images, batch_size=20):
-    fid = fid_score.calculate_fid_given_paths([real_images, generated_images], batch_size=min(batch_size, len(real_images)), device='cuda', dims=2048)
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+    fid = fid_score.calculate_fid_given_paths([real_images, generated_images], batch_size=min(batch_size, len(real_images)), device=device, dims=2048)
     return fid
 
 

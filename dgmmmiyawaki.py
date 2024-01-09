@@ -453,9 +453,29 @@ stim = X_test[:, :, :, 0].reshape(20, 100)
 rec = X_reconstructed_mu[:, 0, :, :].reshape(20, 100)
 
 
-# Calculate IS
-#is_score, is_std = calculate_inception_score(rec, batch_size=2, resize=True, splits=10)
-#print('Inception Score:', is_score, '±', is_std)
+
+import os
+
+# Specify the directory path
+directory = "stim"
+
+# Check if the directory already exists
+if not os.path.exists(directory):
+    # Create the directory
+    os.makedirs(directory)
+    print("Directory created successfully!")
+else:
+    print("Directory already exists!")
+    
+directory = "rec"
+
+# Check if the directory already exists
+if not os.path.exists(directory):
+    # Create the directory
+    os.makedirs(directory)
+    print("Directory created successfully!")
+else:
+    print("Directory already exists!")
 
 from lib.fidis import save_array_as_image
 # Save stim array as images
