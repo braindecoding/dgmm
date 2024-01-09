@@ -477,6 +477,18 @@ if not os.path.exists(directory):
 else:
     print("Directory already exists!")
 
+directory = "recm"
+
+# Check if the directory already exists
+if not os.path.exists(directory):
+    # Create the directory
+    os.makedirs(directory)
+    print("Directory created successfully!")
+else:
+    print("Directory already exists!")
+    
+directory = "recm"
+
 from lib.fidis import save_array_as_image
 # Save stim array as images
 for i in range(len(stim)):
