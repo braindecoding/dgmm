@@ -348,8 +348,8 @@ Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 
 
 from lib import siamese,calculate
-S=np.mat(siamese.S(k, t, Y_train, Y_validation))
-#S=np.mat(calculate.S(k, t, Y_train, Y_validation))
+#S=np.mat(siamese.S(k, t, Y_train, Y_validation))
+S=np.mat(calculate.S(k, t, Y_train, Y_validation))
 
 #savemat('data.mat', {'Y_train':Y_train,'Y_test':Y_test})
 #S=np.mat(eng.calculateS(float(k), float(t))).astype(np.float32)
