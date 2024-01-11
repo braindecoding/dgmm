@@ -155,8 +155,8 @@ Y_lsgms = np.log(1 / gamma_mu * np.ones((numTrn, D2))).astype(np.float32)
 #S=np.mat(calculate.S(k, t, Y_train, Y_test))
 
 from lib import siamese,calculate
-S=np.mat(siamese.S(k, t, Y_train, Y_validation))
-#S=np.mat(calculate.S(k, t, Y_train, Y_validation))
+#S=np.mat(siamese.S(k, t, Y_train, Y_validation))
+S=np.mat(calculate.S(k, t, Y_train, Y_validation))
 # In[]: Loop training
 
 for l in range(maxiter):
